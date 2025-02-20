@@ -1,7 +1,7 @@
 import bilby
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+import pandas as pd  # noqa: F401
 import torch
 from gwpy.plot import Plot
 from gwpy.timeseries import TimeSeries
@@ -95,8 +95,8 @@ class FlowModel(AmplfiModel):
 
     def cast_as_bilby_result(
         self,
-        samples: np.ndarray,
-        truth: np.ndarray,
+        samples: torch.Tensor,
+        truth: torch.Tensor,
     ):
         """Cast posterior samples as Bilby Result object
         for ease of producing corner and pp plots
@@ -122,7 +122,8 @@ class FlowModel(AmplfiModel):
         posterior = {}
         for idx, k in enumerate(self.inference_params):
             posterior[k] = samples.T[idx].flatten()
-        posterior = pd.DataFrame(posterior)
+
+        # posterior = pd.DataFrame(posterior)
 
         r = Result(
             label="PEModel",
@@ -300,10 +301,9 @@ class FlowModel(AmplfiModel):
         descaled = self.trainer.datamodule.scale(samples, reverse=True)
         descaled = self.filter_parameters(descaled)
         parameters = self.trainer.datamodule.scale(parameters, reverse=True)
-
         result = self.cast_as_bilby_result(
-            descaled.cpu().numpy(),
-            parameters.cpu().numpy()[0],
+            descaled,
+            parameters[0],
         )
         result.calculate_skymap(self.nside, self.min_samples_per_pix)
         self.test_results.append(result)
